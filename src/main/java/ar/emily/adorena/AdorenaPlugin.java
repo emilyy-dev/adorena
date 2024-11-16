@@ -21,10 +21,13 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 
-// 24:00 hs
 // TODO:
 //  * kiss Emilia more
 
+/**
+ * Entry point for the working bits of the plugin, listens to damage and other events
+ * and calls respective actions in damage tracker/effect processor
+ */
 @SuppressWarnings("UnstableApiUsage")
 public final class AdorenaPlugin extends JavaPlugin implements Listener {
 
@@ -80,6 +83,7 @@ public final class AdorenaPlugin extends JavaPlugin implements Listener {
     this.damageTracker.recordDeath(event.getEntity(), event.getDamageSource());
   }
 
+  // TODO: replace clearing effects w/ milk bucket with clear_all_effects consumable effect when API is available
   @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
   public void on(final PlayerItemConsumeEvent event) {
     if (this.config.clearEffectWithMilk() && event.getItem().getType() == Material.MILK_BUCKET) {

@@ -21,6 +21,7 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.Objects;
 import java.util.UUID;
 
+/** Class responsible for applying and tracking applied effects with a configured cooldown */
 @SuppressWarnings("UnstableApiUsage")
 public final class EffectProcessor {
 

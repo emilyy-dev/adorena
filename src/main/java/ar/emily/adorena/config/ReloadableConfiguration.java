@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/** Layer on top of ConfigurationV{version} to handle hot-reloading */
 public final class ReloadableConfiguration {
 
   public static final YAMLMapper YAML_MAPPER =

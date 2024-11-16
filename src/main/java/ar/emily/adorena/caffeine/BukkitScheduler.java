@@ -11,6 +11,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Caffeine Scheduler that posts given tasks to the given executor <b>from</b> the server thread,
+ * approximating the delay to full tick count.
+ */
 public final class BukkitScheduler implements Scheduler {
 
   public static final Scheduler INSTANCE = new BukkitScheduler();

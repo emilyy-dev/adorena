@@ -13,13 +13,14 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 
+/** Tracks the last attacker of a player/entity to determine the entity to apply kill effects to */
 @SuppressWarnings("UnstableApiUsage")
 public final class DamageTracker {
 
   private final ReloadableConfiguration config;
   private final EffectProcessor effectProcessor;
 
-  // Cache<LivingEntity, LivingEntity> (target -> attacker)
+  /** Cache&lt;LivingEntity, LivingEntity&gt; (target -&gt; attacker) */
   private final Cache<UUID, UUID> entityLastAttackerCache =
       Caffeine.newBuilder()
           .expireAfterWrite(Duration.ofSeconds(10L))
