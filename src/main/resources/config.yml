@@ -1,0 +1,46 @@
+# scale to grow/shrink by (0.025 = 2.5%)
+growth-rate: 0.025
+
+effect-on-kill:
+  # grow | shrink | none
+  effect: grow
+
+  # number of times the effect can be applied at most
+  maximum-times: 20
+
+  # whether the effect should be removed entirely on death in PvP/PvE
+  reset-on-pvp-death: false
+  reset-on-pve-death: false
+
+  # whether the effects apply when killing a monster as well
+  apply-upon-killing-monsters: false
+
+  # ticks until the effect can be applied again
+  cooldown-ticks: 100
+
+effect-on-death:
+  effect: shrink
+  maximum-times: 20
+  cooldown-ticks: 100
+  apply-upon-dying-to-monsters: false
+
+clear-effect-with-milk: true
+
+# whether the effect applies to monsters when they kill an entity
+# can be: always | player-kills-only | never
+applies-to-monsters: never
+
+# when the death/kill effect is applied, the following attributes are scaled by growth-rate.
+# this other setting allows for fine-tuning each attribute on top of growth-rate (combined, multiplied),
+# so growth-rate serves as a global scale.
+# while the idea of the plugin revolves around the scale attribute, attributes can be added or removed as needed/wanted
+attribute-scale-multipliers:
+  minecraft:scale: 1.0
+  minecraft:safe_fall_distance: 1.0
+  minecraft:step_height: 1.0
+  minecraft:jump_strength: 1.0
+  minecraft:block_interaction_range: 1.0
+  minecraft:entity_interaction_range: 1.0
+
+# do not touch, for config migration across plugin versions
+version: 1

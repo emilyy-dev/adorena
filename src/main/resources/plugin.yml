@@ -1,0 +1,8 @@
+name: adorena
+main: ar.emily.adorena.AdorenaPlugin
+version: "${version}"
+api-version: "1.21"
+authors:
+  - emilyy-dev
+  - rymiel
+prefix: "アドレナ"
