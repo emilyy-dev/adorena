@@ -5,8 +5,11 @@ import ar.emily.adorena.config.ReloadableConfiguration;
 import ar.emily.adorena.kitchen.Adorena;
 import ar.emily.adorena.kitchen.EffectProcessor;
 import ar.emily.adorena.kitchen.DamageTracker;
+import com.google.common.base.Suppliers;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.Consumable;
+import io.papermc.paper.datacomponent.item.consumable.ConsumeEffect;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
-import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -20,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Supplier;
 
 // TODO:
 //  * kiss Emilia more
@@ -41,12 +45,14 @@ public final class AdorenaPlugin extends JavaPlugin implements Listener {
   private final EffectProcessor effectProcessor;
   private final DamageTracker damageTracker;
   private final Adorena adorena;
+  private final Supplier<ConsumeEffect.ClearAllStatusEffects> clearEffectsEffect;
 
   public AdorenaPlugin() {
     this.config = new ReloadableConfiguration(new File(getDataFolder(), "config.yml"));
     this.effectProcessor = new EffectProcessor(this.config);
     this.damageTracker = new DamageTracker(this.config, this.effectProcessor);
     this.adorena = new Adorena(this.config, this.effectProcessor, this.damageTracker);
+    this.clearEffectsEffect = Suppliers.memoize(ConsumeEffect::clearAllStatusEffects);
   }
 
   @Override
@@ -83,10 +89,16 @@ public final class AdorenaPlugin extends JavaPlugin implements Listener {
     this.damageTracker.recordDeath(event.getEntity(), event.getDamageSource());
   }
 
-  // TODO: replace clearing effects w/ milk bucket with clear_all_effects consumable effect when API is available
   @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
   public void on(final PlayerItemConsumeEvent event) {
-    if (this.config.clearEffectWithMilk() && event.getItem().getType() == Material.MILK_BUCKET) {
+    // TODO: rename setting?
+    if (!this.config.clearEffectWithMilk()) {
+      return;
+    }
+
+    // TODO: version-check, just check if item.type == MILK pre-data component API
+    final Consumable consumable = event.getItem().getData(DataComponentTypes.CONSUMABLE);
+    if (consumable != null && consumable.consumeEffects().contains(this.clearEffectsEffect.get())) {
       this.effectProcessor.resetEffects(event.getPlayer());
     }
   }

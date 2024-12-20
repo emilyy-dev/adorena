@@ -23,7 +23,7 @@ repositories {
 }
 
 dependencies {
-  compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
+  compileOnly("io.papermc.paper:paper-api:1.21.3-R0.1-SNAPSHOT")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.2")
   implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
 }
