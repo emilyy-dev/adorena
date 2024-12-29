@@ -8,13 +8,11 @@ and dynamic survival experiences.
 
 ![project banner, with a speech bubble on the project character that reads "adorena"](assets/adorena-banner.jpg)
 
-![in-game screenshot of two players of visibly different size](assets/adorena-in-game.png)
-
 ---
 
-## Downloads
+## Download on [Hangar](https://hangar.papermc.io/Emily/adorena)
 
-### Coming soon to Hangar
+### Coming soon to Modrinth
 
 ![picture of a construction site](assets/glenov-brankovic-DWp5nUqTn6E-unsplash.jpg)
 
@@ -24,6 +22,8 @@ ___
 
 The plugin works by modifying player attributes and increasing or decreasing their intensity.
 Many aspects of the plugin are configurable, such as the set of attributes, the applied effect's magnitude, etc.
+
+![in-game screenshot of two players of visibly different size](assets/adorena-in-game.png)
 
 ```yaml
 # scale to grow/shrink by (0.025 = 2.5%)

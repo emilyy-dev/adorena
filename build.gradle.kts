@@ -1,3 +1,4 @@
+import io.papermc.hangarpublishplugin.model.Platforms
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -5,6 +6,7 @@ plugins {
   java
   id("com.gradleup.shadow") version "9.0.0-beta4"
   id("xyz.jpenilla.run-paper") version "2.3.1"
+  id("io.papermc.hangar-publish-plugin") version "0.1.2"
 }
 
 val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd")
@@ -73,7 +75,34 @@ tasks {
   runServer {
     minecraftVersion("1.21.4")
   }
+
+  val publishToPluginRepos by registering {
+    dependsOn(publishAllPublicationsToHangar)
+  }
+}
+
+val supportedMinecraftVersions = listOf("1.21.3", "1.21.4")
+
+hangarPublish {
+  publications.register("adorena") {
+    id = "adorena"
+    version = versionProvider
+    channel = "Release"
+    changelog = fetchLastCommitMessage()
+    apiKey = providers.environmentVariable("HANGAR_API_KEY")
+    platforms {
+      register(Platforms.PAPER) {
+        jar = tasks.shadowJar.flatMap { it.archiveFile }
+        platformVersions = supportedMinecraftVersions
+      }
+    }
+  }
 }
 
 fun fetchCommitsSinceMidnight(): Provider<String> =
-  providers.exec { commandLine("git", "rev-list", "--count", "HEAD", "--since=midnight") }.standardOutput.asText
+  providers.exec {
+    commandLine("git", "rev-list", "--count", "HEAD", "--since=midnight", "--grep=^\\[ci skip\\]", "--invert-grep")
+  }.standardOutput.asText
+
+fun fetchLastCommitMessage(): Provider<String> =
+  providers.exec { commandLine("git", "log", "-1", "--pretty=%B") }.standardOutput.asText

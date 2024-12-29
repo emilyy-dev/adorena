@@ -1,0 +1,30 @@
+name: Publish to plugin repositories
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    if: ${{ ! startsWith(github.event.head_commit.message, '[ci skip]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Publish
+        env:
+          HANGAR_API_KEY: ${{ secrets.HANGAR_API_KEY }}
+        run: ./gradlew --no-daemon publishToPluginRepos

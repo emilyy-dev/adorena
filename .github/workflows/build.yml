@@ -4,8 +4,12 @@ on: [ push, pull_request ]
 
 jobs:
   build:
-    # Only run on PRs if the source branch is on someone else's repo
-    if: ${{ github.event_name != 'pull_request' || github.repository != github.event.pull_request.head.repo.full_name }}
+    # Only run on PRs if the source branch is on someone else's repo and commit message doesn't start with [ci skip]
+    if: >
+      ${{
+        (github.event_name != 'pull_request' || github.repository != github.event.pull_request.head.repo.full_name)
+        && ! startsWith(github.event.head_commit.message, '[ci skip]')
+      }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
