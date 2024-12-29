@@ -1,16 +1,17 @@
 import java.time.LocalDate
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 plugins {
   java
-  idea
   id("com.gradleup.shadow") version "9.0.0-beta4"
   id("xyz.jpenilla.run-paper") version "2.3.1"
 }
 
+val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd")
+val versionProvider = fetchCommitsSinceMidnight().map { "${dateFormatter.format(LocalDate.now())}-$it" }
+
 group = "io.github.emilyy-dev"
-version = LocalDate.now(ZoneOffset.UTC).format(DateTimeFormatter.ofPattern("yyyy.MM.dd"))
+version = versionProvider.get()
 
 java {
   toolchain {
@@ -31,8 +32,10 @@ dependencies {
 
 tasks {
   processResources {
-    inputs.property("version", version)
-    expand(mapOf("version" to version))
+    inputs.property("version", versionProvider)
+    doFirst {
+      expand(mapOf("version" to versionProvider.get()))
+    }
   }
 
   assemble {
@@ -41,11 +44,13 @@ tasks {
 
   jar {
     archiveClassifier = "noshade"
+    archiveVersion = versionProvider
     metaInf.from("COPYING")
   }
 
   shadowJar {
     archiveClassifier = null
+    archiveVersion = versionProvider
     mergeServiceFiles()
     metaInf.from("COPYING")
 
@@ -69,3 +74,6 @@ tasks {
     minecraftVersion("1.21.4")
   }
 }
+
+fun fetchCommitsSinceMidnight(): Provider<String> =
+  providers.exec { commandLine("git", "rev-list", "--count", "HEAD", "--since=midnight") }.standardOutput.asText
