@@ -5,7 +5,8 @@ import java.time.format.DateTimeFormatter
 plugins {
   java
   idea
-  id("com.gradleup.shadow") version "8.3.4"
+  id("com.gradleup.shadow") version "9.0.0-beta4"
+  id("xyz.jpenilla.run-paper") version "2.3.1"
 }
 
 group = "io.github.emilyy-dev"
@@ -62,5 +63,9 @@ tasks {
       attributes["paperweight-mappings-namespace"] = "mojang"
       attributes["Multi-Release"] = "true"
     }
+  }
+
+  runServer {
+    minecraftVersion("1.21.4")
   }
 }
