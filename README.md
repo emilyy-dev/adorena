@@ -2,8 +2,8 @@
 
 ## Overview
 
-Adorena is a lightweight, versatile plugin designed for Paper servers. It enhances PvP encounters by applying
-special effects to players when they kill or are killed, making for more thrilling combats, entertaining minigames,
+Adorena is a lightweight, versatile plugin designed for Paper servers. With the simple mechanic of scaling
+players and mobs when they kill or are killed, it makes for more thrilling combats, entertaining minigames,
 and dynamic survival experiences.
 
 ![project banner, with a speech bubble on the project character that reads "adorena"](assets/adorena-banner.jpg)
