@@ -1,4 +1,4 @@
-# Adorena
+# Adorena - アドレナ
 
 ## Overview
 
