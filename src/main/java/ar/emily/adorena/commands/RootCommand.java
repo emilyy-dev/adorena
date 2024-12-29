@@ -21,7 +21,8 @@ public final class RootCommand {
           src.sendPlainMessage('[' + PluginConstants.STYLIZED_NAME + " - Adorena] - v" + PluginConstants.VERSION);
           return 0;
         }).then(ResetEffectsCommand.create(adorena.effectProcessor()))
-        .then(ReloadConfigCommand.create(adorena.config()));
+        .then(ReloadConfigCommand.create(adorena.config()))
+        .then(AmplitudeCommands.create(adorena.effectProcessor()));
   }
 
   static Predicate<CommandSourceStack> permission(final String permission) {

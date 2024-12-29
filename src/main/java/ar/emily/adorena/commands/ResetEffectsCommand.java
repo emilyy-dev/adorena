@@ -31,13 +31,14 @@ final class ResetEffectsCommand {
   static LiteralArgumentBuilder<CommandSourceStack> create(final EffectProcessor effectProcessor) {
     return literal("reset")
         .requires(permission("adorena.reset"))
-        .executes(ctx -> resetSelf(ctx.getSource().getSender(), effectProcessor))
+        .executes(ctx -> resetSelf(ctx.getSource(), effectProcessor))
         .then(argument("targets", ArgumentTypes.entities()).executes(ctx -> resetTargets(ctx, effectProcessor)));
   }
 
-  private static int resetSelf(final CommandSender source, final EffectProcessor effectProcessor) {
-    if (source instanceof final Player player) {
-      effectProcessor.resetEffects(player);
+  private static int resetSelf(final CommandSourceStack css, final EffectProcessor effectProcessor) {
+    final CommandSender source = css.getSender();
+    if (css.getExecutor() instanceof final LivingEntity target) {
+      effectProcessor.resetEffects(target);
       source.sendPlainMessage(prefixed("Effects have been reset"));
       return 1;
     } else {

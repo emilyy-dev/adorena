@@ -3,20 +3,22 @@ package ar.emily.adorena;
 import ar.emily.adorena.commands.RootCommand;
 import ar.emily.adorena.config.ReloadableConfiguration;
 import ar.emily.adorena.kitchen.Adorena;
-import ar.emily.adorena.kitchen.EffectProcessor;
 import ar.emily.adorena.kitchen.DamageTracker;
+import ar.emily.adorena.kitchen.EffectProcessor;
 import com.google.common.base.Suppliers;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.Consumable;
 import io.papermc.paper.datacomponent.item.consumable.ConsumeEffect;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.function.Supplier;
+import java.util.random.RandomGenerator;
 
 // TODO:
 //  * kiss Emilia more
@@ -46,6 +49,7 @@ public final class AdorenaPlugin extends JavaPlugin implements Listener {
   private final DamageTracker damageTracker;
   private final Adorena adorena;
   private final Supplier<ConsumeEffect.ClearAllStatusEffects> clearEffectsEffect;
+  private final RandomGenerator randomSource;
 
   public AdorenaPlugin() {
     this.config = new ReloadableConfiguration(new File(getDataFolder(), "config.yml"));
@@ -53,6 +57,14 @@ public final class AdorenaPlugin extends JavaPlugin implements Listener {
     this.damageTracker = new DamageTracker(this.config, this.effectProcessor);
     this.adorena = new Adorena(this.config, this.effectProcessor, this.damageTracker);
     this.clearEffectsEffect = Suppliers.memoize(ConsumeEffect::clearAllStatusEffects);
+
+    final ClassLoader ctxClassLoader = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader());
+    try {
+      this.randomSource = RandomGenerator.getDefault();
+    } finally {
+      Thread.currentThread().setContextClassLoader(ctxClassLoader);
+    }
   }
 
   @Override
@@ -91,15 +103,31 @@ public final class AdorenaPlugin extends JavaPlugin implements Listener {
 
   @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
   public void on(final PlayerItemConsumeEvent event) {
-    // TODO: rename setting?
-    if (!this.config.clearEffectWithMilk()) {
+    if (!this.config.clearEffectWithMilk() && !this.config.suspiciousStewAppliesEffectsRandomly()) {
       return;
     }
 
-    // TODO: version-check, just check if item.type == MILK pre-data component API
-    final Consumable consumable = event.getItem().getData(DataComponentTypes.CONSUMABLE);
-    if (consumable != null && consumable.consumeEffects().contains(this.clearEffectsEffect.get())) {
-      this.effectProcessor.resetEffects(event.getPlayer());
+    final ItemStack item = event.getItem();
+    final Player player = event.getPlayer();
+
+    // order here mimics vanilla's behavior if you have an item with SUSPICIOUS_STEW_EFFECTS & CLEAR_ALL_STATUS_EFFECTS
+
+    if (this.config.suspiciousStewAppliesEffectsRandomly() && item.hasData(DataComponentTypes.SUSPICIOUS_STEW_EFFECTS)) {
+      final int randomAmplitude =
+          this.randomSource.nextInt(
+              -this.config.effectOnDeath().maximumTimes(),
+              this.config.effectOnKill().maximumTimes()
+          );
+      this.effectProcessor.setEffectsAmplitude(player, randomAmplitude);
+    }
+
+    // TODO: rename setting?
+    if (this.config.clearEffectWithMilk()) {
+      // TODO: version-check, just check if item.type == MILK pre-data component API.. or maybe don't do that
+      final Consumable consumable = item.getData(DataComponentTypes.CONSUMABLE);
+      if (consumable != null && consumable.consumeEffects().contains(this.clearEffectsEffect.get())) {
+        this.effectProcessor.resetEffects(player);
+      }
     }
   }
 }

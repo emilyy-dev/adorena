@@ -85,6 +85,31 @@ public final class EffectProcessor {
     }
   }
 
+  public int getEffectsAmplitude(final LivingEntity target) {
+    return target.getPersistentDataContainer().getOrDefault(COUNTER_PDC_KEY, PersistentDataType.INTEGER, 0);
+  }
+
+  public void setEffectsAmplitude(final LivingEntity target, int amplitude) {
+    amplitude = Math.clamp(amplitude, -this.config.effectOnDeath().maximumTimes(), this.config.effectOnKill().maximumTimes());
+
+    target.getPersistentDataContainer().set(COUNTER_PDC_KEY, PersistentDataType.INTEGER, amplitude);
+
+    final BasicEffectSettings currentEffect = amplitude < 0 ? this.config.effectOnDeath() : this.config.effectOnKill();
+    final double scalar = scalarFromRate(this.config.growthRate(), currentEffect.effect());
+    final double scale = scalar * Math.abs(amplitude);
+
+    this.config.attributeScaleMultipliers().forEach((attributeKey, scaleAdjuster) -> {
+      final Attribute attribute = Objects.requireNonNull(Registry.ATTRIBUTE.get(attributeKey));
+      final AttributeInstance attributeInstance = target.getAttribute(attribute);
+      if (attributeInstance != null) {
+        final double adjustedScale = scaleAdjuster * scale;
+        final AttributeModifier modifier = attributeInstance.getModifier(GROWTH_MODIFIER_KEY);
+        if (modifier != null) { attributeInstance.removeModifier(modifier); }
+        attributeInstance.addModifier(createModifier(adjustedScale));
+      }
+    });
+  }
+
   /**
    * @author rymiel
    */
@@ -107,13 +132,7 @@ public final class EffectProcessor {
       counter = Math.max(counter - 1, -this.config.effectOnDeath().maximumTimes());
     }
 
-    pdc.set(COUNTER_PDC_KEY, PersistentDataType.INTEGER, counter);
-
-    final BasicEffectSettings currentEffect = counter < 0 ? this.config.effectOnDeath() : this.config.effectOnKill();
-    final double scalar = scalarFromRate(this.config.growthRate(), currentEffect.effect());
-    final double scale = scalar * Math.abs(counter);
-
-    setTargetAttribute(target, scale);
+    setEffectsAmplitude(target, counter);
   }
 
   private static double scalarFromRate(final double rate, final EffectKind kind) {
@@ -122,19 +141,6 @@ public final class EffectProcessor {
       case SHRINK -> -rate;
       case NONE -> 0;
     };
-  }
-
-  private void setTargetAttribute(final LivingEntity target, final double scale) {
-    this.config.attributeScaleMultipliers().forEach((attributeKey, scaleAdjuster) -> {
-      final Attribute attribute = Objects.requireNonNull(Registry.ATTRIBUTE.get(attributeKey));
-      final AttributeInstance attributeInstance = target.getAttribute(attribute);
-      if (attributeInstance != null) {
-        final double adjustedScale = scaleAdjuster * scale;
-        final AttributeModifier modifier = attributeInstance.getModifier(GROWTH_MODIFIER_KEY);
-        if (modifier != null) { attributeInstance.removeModifier(modifier); }
-        attributeInstance.addModifier(createModifier(adjustedScale));
-      }
-    });
   }
 
   private void rebuildCooldownSets() {

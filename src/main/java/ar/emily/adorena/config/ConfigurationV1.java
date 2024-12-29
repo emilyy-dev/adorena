@@ -12,6 +12,7 @@ public record ConfigurationV1(
     KillEffectSettings effectOnKill,
     DeathEffectSettings effectOnDeath,
     boolean clearEffectWithMilk,
+    boolean suspiciousStewAppliesEffectsRandomly,
     AppliesToMonsters appliesToMonsters,
     Map<NamespacedKey, Double> attributeScaleMultipliers
 ) implements AbstractConfiguration {

@@ -85,6 +85,10 @@ public final class ReloadableConfiguration {
     return assertLoaded().clearEffectWithMilk();
   }
 
+  public boolean suspiciousStewAppliesEffectsRandomly() {
+    return assertLoaded().suspiciousStewAppliesEffectsRandomly();
+  }
+
   public AppliesToMonsters appliesToMonsters() {
     return assertLoaded().appliesToMonsters();
   }

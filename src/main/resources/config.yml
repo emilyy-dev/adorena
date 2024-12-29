@@ -26,6 +26,8 @@ effect-on-death:
 
 clear-effect-with-milk: true
 
+suspicious-stew-applies-effects-randomly: false
+
 # whether the effect applies to monsters when they kill an entity
 # can be: always | player-kills-only | never
 applies-to-monsters: never
