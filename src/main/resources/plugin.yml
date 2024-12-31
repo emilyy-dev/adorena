@@ -6,3 +6,4 @@ authors:
   - emilyy-dev
   - rymiel
 prefix: "アドレナ"
+load: STARTUP
