@@ -28,19 +28,6 @@ public final class EffectProcessor {
   private static final NamespacedKey GROWTH_MODIFIER_KEY = new NamespacedKey("adorena", "growth");
   private static final NamespacedKey COUNTER_PDC_KEY = new NamespacedKey("adorena", "counter");
 
-  @Deprecated
-  private static AttributeModifier modifyModifier(final AttributeModifier modifier, final double scale) {
-    final double adjustedValue = (1 + modifier.getAmount()) * scale - 1;
-    return new AttributeModifier(modifier.getKey(), adjustedValue, modifier.getOperation(), modifier.getSlotGroup());
-  }
-
-  @Deprecated
-  private static AttributeModifier createModifier() {
-    return new AttributeModifier(
-        GROWTH_MODIFIER_KEY, 0, AttributeModifier.Operation.MULTIPLY_SCALAR_1, EquipmentSlotGroup.ANY
-    );
-  }
-
   private static AttributeModifier createModifier(final double amount) {
     return new AttributeModifier(
         GROWTH_MODIFIER_KEY, amount, AttributeModifier.Operation.ADD_SCALAR, EquipmentSlotGroup.ANY
@@ -74,10 +61,17 @@ public final class EffectProcessor {
     this.config.attachReloadListener(this::rebuildCooldownSets);
   }
 
+  public void loadEffects(final LivingEntity target) {
+    final int amplitude = getEffectsAmplitude(target);
+    resetEffects(target); // remove potentially old/persistent modifiers
+    if (amplitude != 0) {
+      setEffectsAmplitude(target, amplitude);
+    }
+  }
+
   public void resetEffects(final LivingEntity target) {
     target.getPersistentDataContainer().remove(COUNTER_PDC_KEY);
-    for (final NamespacedKey attributeKey : this.config.attributeScaleMultipliers().keySet()) {
-      final Attribute attribute = Objects.requireNonNull(Registry.ATTRIBUTE.get(attributeKey));
+    for (final Attribute attribute : Registry.ATTRIBUTE) {
       final AttributeInstance attributeInstance = target.getAttribute(attribute);
       if (attributeInstance != null) {
         attributeInstance.removeModifier(GROWTH_MODIFIER_KEY);
@@ -105,7 +99,7 @@ public final class EffectProcessor {
         final double adjustedScale = scaleAdjuster * scale;
         final AttributeModifier modifier = attributeInstance.getModifier(GROWTH_MODIFIER_KEY);
         if (modifier != null) { attributeInstance.removeModifier(modifier); }
-        attributeInstance.addModifier(createModifier(adjustedScale));
+        attributeInstance.addTransientModifier(createModifier(adjustedScale));
       }
     });
   }
@@ -151,33 +145,6 @@ public final class EffectProcessor {
     this.cooldownCaches.deathCooldownCache.invalidateAll();
 
     this.cooldownCaches = newCooldownCaches;
-  }
-
-  @Deprecated
-  private void modifyPlayerAttribute(final Player player, double scale, final EffectKind kind) {
-    if (kind == EffectKind.NONE) {
-      return;
-    }
-
-    if (kind == EffectKind.SHRINK) {
-      scale = 1.0 / scale;
-    }
-
-    final double finalScale = scale;
-    this.config.attributeScaleMultipliers().forEach((attributeKey, scaleAdjuster) -> {
-      final Attribute attribute = Objects.requireNonNull(Registry.ATTRIBUTE.get(attributeKey));
-      final AttributeInstance playerAttribute = player.getAttribute(attribute);
-      final double adjustedScale = scaleAdjuster * finalScale;
-      assert playerAttribute != null;
-      final AttributeModifier modifier = playerAttribute.getModifier(GROWTH_MODIFIER_KEY);
-      if (modifier != null) {
-        playerAttribute.removeModifier(modifier);
-        final AttributeModifier modifiedModifier = modifyModifier(modifier, adjustedScale);
-        playerAttribute.addModifier(modifiedModifier);
-      } else {
-        playerAttribute.addModifier(modifyModifier(createModifier(), adjustedScale));
-      }
-    });
   }
 
   public enum ApplicationCause {

@@ -10,6 +10,8 @@ import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.Consumable;
 import io.papermc.paper.datacomponent.item.consumable.ConsumeEffect;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import org.bukkit.World;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -18,6 +20,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.slf4j.Logger;
@@ -25,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
@@ -65,6 +70,8 @@ public final class AdorenaPlugin extends JavaPlugin implements Listener {
     } finally {
       Thread.currentThread().setContextClassLoader(ctxClassLoader);
     }
+
+    this.config.attachReloadListener(this::reloadAllEffects);
   }
 
   @Override
@@ -84,6 +91,27 @@ public final class AdorenaPlugin extends JavaPlugin implements Listener {
     getLifecycleManager().registerEventHandler(
         LifecycleEvents.COMMANDS, event -> event.registrar().register(RootCommand.create(this.adorena).build())
     );
+  }
+
+  private void reloadAllEffects() {
+    getServer().getWorlds().stream()
+        .map(World::getLivingEntities)
+        .flatMap(Collection::stream)
+        .forEach(this.effectProcessor::loadEffects);
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void on(final PlayerJoinEvent event) {
+    this.effectProcessor.loadEffects(event.getPlayer());
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void on(final EntitiesLoadEvent event) {
+    for (final Entity entity : event.getEntities()) {
+      if (entity instanceof final LivingEntity target) {
+        this.effectProcessor.loadEffects(target);
+      }
+    }
   }
 
   @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)

@@ -13,7 +13,6 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -115,8 +114,8 @@ final class AmplitudeCommands {
       final int amplitude
   ) {
     final CommandSender source = css.getSender();
-    if (css.getExecutor() instanceof final Player player) {
-      effectProcessor.setEffectsAmplitude(player, amplitude);
+    if (css.getExecutor() instanceof final LivingEntity target) {
+      effectProcessor.setEffectsAmplitude(target, amplitude);
       source.sendPlainMessage(prefixed("Effects have been reset"));
       return 1;
     } else {

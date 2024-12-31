@@ -102,7 +102,7 @@ hangarPublish {
 fun fetchCommitsSinceMidnight(): Provider<String> =
   providers.exec {
     commandLine("git", "rev-list", "--count", "HEAD", "--since=midnight", "--grep=^\\[ci skip\\]", "--invert-grep")
-  }.standardOutput.asText
+  }.standardOutput.asText.map(String::trim)
 
 fun fetchLastCommitMessage(): Provider<String> =
-  providers.exec { commandLine("git", "log", "-1", "--pretty=%B") }.standardOutput.asText
+  providers.exec { commandLine("git", "log", "-1", "--pretty=%B") }.standardOutput.asText.map(String::trim)
