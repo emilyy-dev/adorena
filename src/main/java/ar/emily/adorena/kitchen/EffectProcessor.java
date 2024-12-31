@@ -27,6 +27,7 @@ public final class EffectProcessor {
 
   private static final NamespacedKey GROWTH_MODIFIER_KEY = new NamespacedKey("adorena", "growth");
   private static final NamespacedKey COUNTER_PDC_KEY = new NamespacedKey("adorena", "counter");
+  private static final NamespacedKey USES_TRANSIENT_KEY = new NamespacedKey("adorena", "uses_transient");
 
   private static AttributeModifier createModifier(final double amount) {
     return new AttributeModifier(
@@ -61,9 +62,13 @@ public final class EffectProcessor {
     this.config.attachReloadListener(this::rebuildCooldownSets);
   }
 
-  public void loadEffects(final LivingEntity target) {
+  public void loadEffects(final LivingEntity target, final boolean needsReload) {
     final int amplitude = getEffectsAmplitude(target);
-    resetEffects(target); // remove potentially old/persistent modifiers
+    final boolean usesTransient = target.getPersistentDataContainer().getOrDefault(USES_TRANSIENT_KEY, PersistentDataType.BOOLEAN, false);
+    if (!usesTransient || needsReload) {
+      resetEffects(target); // remove old persistent modifiers
+      target.getPersistentDataContainer().set(USES_TRANSIENT_KEY, PersistentDataType.BOOLEAN, true);
+    }
     if (amplitude != 0) {
       setEffectsAmplitude(target, amplitude);
     }
