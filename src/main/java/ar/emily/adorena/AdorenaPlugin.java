@@ -97,19 +97,19 @@ public final class AdorenaPlugin extends JavaPlugin implements Listener {
     getServer().getWorlds().stream()
         .map(World::getLivingEntities)
         .flatMap(Collection::stream)
-        .forEach(target -> this.effectProcessor.loadEffects(target, true));
+        .forEach(this.effectProcessor::reloadEffects);
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void on(final PlayerJoinEvent event) {
-    this.effectProcessor.loadEffects(event.getPlayer(), false);
+    this.effectProcessor.loadEffects(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
   public void on(final EntitiesLoadEvent event) {
     for (final Entity entity : event.getEntities()) {
       if (entity instanceof final LivingEntity target) {
-        this.effectProcessor.loadEffects(target, false);
+        this.effectProcessor.loadEffects(target);
       }
     }
   }

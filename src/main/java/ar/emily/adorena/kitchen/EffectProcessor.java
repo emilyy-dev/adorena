@@ -62,11 +62,19 @@ public final class EffectProcessor {
     this.config.attachReloadListener(this::rebuildCooldownSets);
   }
 
-  public void loadEffects(final LivingEntity target, final boolean needsReload) {
+  public void loadEffects(final LivingEntity target) {
+    loadEffects(target, false);
+  }
+
+  public void reloadEffects(final LivingEntity target) {
+    loadEffects(target, true);
+  }
+
+  private void loadEffects(final LivingEntity target, final boolean needsReload) {
     final int amplitude = getEffectsAmplitude(target);
     final boolean usesTransient = target.getPersistentDataContainer().getOrDefault(USES_TRANSIENT_KEY, PersistentDataType.BOOLEAN, false);
     if (!usesTransient || needsReload) {
-      resetEffects(target); // remove old persistent modifiers
+      resetEffects(target); // remove potentially old persistent modifiers
       target.getPersistentDataContainer().set(USES_TRANSIENT_KEY, PersistentDataType.BOOLEAN, true);
     }
     if (amplitude != 0) {
